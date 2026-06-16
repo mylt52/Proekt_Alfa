@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+  <title>Альфа Сервис</title>
+  <link rel="manifest" href="manifest.json">
+  <!-- Поддержка иконки ярлыка для iPhone/iPad -->
+  <link rel="apple-touch-icon" href="apple-icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Иконки для меню -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* Мягкое наложение фоновой картинки bg.jpg, если она загружена */
+    body {
+      background-image: linear-gradient(rgba(248, 250, 252, 0.96), rgba(248, 250, 252, 0.96)), url('bg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between pb-20">
+
+  <!-- ШАПКА (СВЕТЛАЯ, АДАПТИВНАЯ) -->
+  <header class="bg-white border-b border-slate-200 text-slate-800 shadow-sm sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+      
+      <!-- Слева: Адрес -->
+      <div class="hidden md:flex items-center gap-2 text-xs text-slate-500 max-w-[250px]">
+        <i class="fa-solid fa-location-dot text-[#e30613] text-sm"></i>
+        <span>Нижний Новгород, ул. Коминтерна, 39 "E" корпус 1</span>
+      </div>
+      
+      <!-- По центру: Фирменный логотип -->
+      <div class="flex justify-center items-center">
+        <!-- Скругленный красный квадрат с буквой alpha -->
+        <div class="w-9 h-9 bg-[#e30613] rounded-lg flex items-center justify-center mr-2 shadow-sm">
+          <span class="text-white font-serif font-black text-xl italic leading-none" style="font-family: 'Georgia', serif;">α</span>
+        </div>
+        <span class="text-[#e30613] font-black text-2xl tracking-wider uppercase" style="font-family: 'Arial', sans-serif;">Альфа</span>
+        <button id="pwaInstallBtn" class="hidden ml-4 text-[#e30613] hover:text-red-500 text-lg">
+          <i class="fa-solid fa-download"></i>
+        </button>
+      </div>
+      
+      <!-- Справа: Телефон и Режим работы -->
+      <div class="flex flex-col items-center md:items-end text-xs text-slate-500">
+        <a href="tel:+78312621558" class="text-[#e30613] font-extrabold text-sm md:text-base hover:underline flex items-center gap-1">
+          <i class="fa-solid fa-phone"></i> +7 (831) 262-15-58
+        </a>
+        <div class="flex items-center gap-1 mt-0.5 text-[10px] md:text-xs">
+          <span class="font-medium">ежедневно</span>
+          <span class="text-slate-400">|</span>
+          <span class="font-bold text-slate-600">09:00 - 20:00</span>
+        </div>
+      </div>
+
+      <!-- Мобильный адрес (Отображается только на телефонах под логотипом) -->
+      <div class="flex md:hidden justify-center items-center gap-1.5 text-[10px] text-slate-400 text-center border-t border-slate-100 pt-2">
+        <i class="fa-solid fa-location-dot text-[#e30613]"></i>
+        <span>Нижний Новгород, ул. Коминтерна, 39 "E" корпус 1</span>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- КОНТЕНТ ВКЛАДОК -->
+  <main class="p-4 max-w-md mx-auto w-full flex-grow flex flex-col justify-center">
+
+    <!-- 1. ВКЛАДКА: ЗАПИСЬ НА СЕРВИС -->
+    <section id="tab-booking" class="tab-content bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-slate-800">
+      <h2 class="text-lg font-bold mb-4 text-slate-800 text-center">Запись на ремонт / ТО</h2>
+      <form id="bookingForm" class="space-y-4">
+        
+        <div id="noProfileWarning" class="bg-red-50 border border-red-100 p-3 rounded-lg text-xs text-red-600 mb-2">
+          ⚠️ Сначала заполните профиль и добавьте машину во вкладке <strong>«Гараж»</strong>!
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">ФИО клиента</label>
+          <input type="text" id="bookName" readonly required class="w-full bg-slate-100 border border-slate-200 rounded-lg px-4 py-3 text-slate-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Телефон</label>
+          <input type="tel" id="bookPhone" readonly required class="w-full bg-slate-100 border border-slate-200 rounded-lg px-4 py-3 text-slate-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Выберите автомобиль *</label>
+          <select id="bookCarSelect" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 focus:outline-none focus:border-[#e30613]">
+          </select>
+        </div>
+
+        <!-- ДАТА И ВРЕМЯ БЕЗ УКАЗАНИЯ ГОДА -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Дата *</label>
+            <select id="bookDateSelect" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-3 text-xs text-slate-800 focus:outline-none focus:border-[#e30613]">
+              <!-- Заполняется динамически через JS -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Время *</label>
+            <select id="bookTimeSelect" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-3 text-xs text-slate-800 focus:outline-none focus:border-[#e30613]">
+              <option value="09:00">09:00</option>
+              <option value="09:30">09:30</option>
+              <option value="10:00">10:00</option>
+              <option value="10:30">10:30</option>
+              <option value="11:00">11:00</option>
+              <option value="11:30">11:30</option>
+              <option value="12:00">12:00</option>
+              <option value="12:30">12:30</option>
+              <option value="13:00">13:00</option>
+              <option value="13:30">13:30</option>
+              <option value="14:00">14:00</option>
+              <option value="14:30">14:30</option>
+              <option value="15:00">15:00</option>
+              <option value="15:30">15:30</option>
+              <option value="16:00">16:00</option>
+              <option value="16:30">16:30</option>
+              <option value="17:00">17:00</option>
+              <option value="17:30">17:30</option>
+              <option value="18:00">18:00</option>
+              <option value="18:30">18:30</option>
+              <option value="19:00">19:00</option>
+              <option value="19:30">19:30</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Причина обращения *</label>
+          <textarea id="bookReason" required placeholder="Опишите проблему..." rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 focus:outline-none focus:border-[#e30613] resize-none"></textarea>
+        </div>
+
+        <button type="submit" id="submitBookingBtn" disabled class="w-full bg-[#e30613] hover:bg-red-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold py-4 rounded-lg uppercase tracking-wider text-sm mt-4 transition-colors shadow-md">
+          Отправить заявку
+        </button>
+      </form>
+    </section>
+
+    <!-- 2. ВКЛАДКА: ГАРАЖ И ПРОФИЛЬ -->
+    <section id="tab-garage" class="tab-content hidden space-y-6">
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-slate-800">
+        <h3 class="text-base font-bold mb-4 text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-user text-[#e30613]"></i> Профиль владельца
+        </h3>
+        <div class="space-y-3">
+          <input type="text" id="ownerName" placeholder="Ваше Имя и Фамилия" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:border-[#e30613]">
+          <input type="tel" id="ownerPhone" placeholder="Номер телефона (+7...)" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:border-[#e30613]">
+          <button onclick="saveProfile()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold py-2.5 rounded-lg text-sm transition-colors border border-slate-200">
+            Сохранить контакты
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-slate-800">
+        <h3 class="text-base font-bold mb-4 text-slate-800 flex items-center justify-between">
+          <span><i class="fa-solid fa-car text-[#e30613] mr-2"></i> Мои автомобили</span>
+          <button onclick="toggleAddCarForm()" class="text-xs bg-[#e30613] hover:bg-red-700 px-3 py-1.5 rounded-lg text-white font-semibold">
+            + Добавить
+          </button>
+        </h3>
+
+        <form id="addCarForm" class="hidden bg-slate-50 p-4 border border-slate-200 rounded-xl mb-4 space-y-3">
+          <input type="text" id="carModel" required placeholder="Марка и модель (например: Audi A4)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-[#e30613]">
+          <input type="text" id="carPlate" required placeholder="Госномер (например: А777АА77)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none uppercase focus:border-[#e30613]">
+          <input type="text" id="carVin" placeholder="VIN-номер (опционально)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none uppercase focus:border-[#e30613]">
+          <div class="flex gap-2">
+            <button type="submit" class="flex-1 bg-[#e30613] hover:bg-red-700 text-white font-bold py-2 rounded-lg text-xs">Добавить</button>
+            <button type="button" onclick="toggleAddCarForm()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 rounded-lg text-xs">Отмена</button>
+          </div>
+        </form>
+
+        <div id="carsList" class="space-y-3"></div>
+      </div>
+    </section>
+
+    <!-- 3. ВКЛАДКА: ЧАТ С МАСТЕРОМ -->
+    <section id="tab-chat" class="tab-content hidden flex flex-col h-[calc(100dvh-190px)] mb-14 w-full max-w-md bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-md text-slate-800">
+      
+      <!-- Шапка чата -->
+      <div class="bg-slate-50 p-3 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+          <span class="text-xs font-bold text-slate-700">Мастер-приемщик онлайн</span>
+        </div>
+        <span id="chatStatusText" class="text-[10px] text-slate-400">Чат не создан</span>
+      </div>
+
+      <!-- Предупреждение -->
+      <div id="chatDisabledState" class="flex-grow flex flex-col items-center justify-center text-center p-6 space-y-4">
+        <i class="fa-solid fa-comments text-5xl text-slate-300"></i>
+        <h3 class="text-base font-bold text-slate-700">Диалог с мастером</h3>
+        <p class="text-xs text-slate-400 max-w-xs">Чтобы начать общаться напрямую, пожалуйста, сначала заполните профиль и добавьте машину в разделе «Гараж».</p>
+      </div>
+
+      <!-- Зона сообщений -->
+      <div id="chatEnabledState" class="hidden flex-grow flex flex-col justify-between h-full overflow-hidden bg-white">
+        <div id="chatMessagesContainer" class="flex-grow p-4 overflow-y-auto space-y-3 flex flex-col">
+          <div class="text-center text-[10px] text-slate-400 my-auto py-8">
+            👋 Напишите ваше первое сообщение ниже.<br>Персональный чат в Битрикс24 создастся автоматически!
+          </div>
+        </div>
+
+        <!-- Поле ввода -->
+        <div class="p-3 bg-slate-50 border-t border-slate-200 flex gap-2 items-center">
+          <input type="text" id="chatInput" placeholder="Напишите сообщение..." 
+            class="flex-grow bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#e30613]">
+          <button onclick="sendChatMessage()" id="chatSendBtn"
+            class="bg-[#e30613] hover:bg-red-700 text-white rounded-lg p-2.5 w-10 h-10 flex items-center justify-center transition-colors">
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- НИЖНЕЕ МЕНЮ (СВЕТЛОЕ, С КРАСНЫМ АКЦЕНТОМ) -->
+  <nav class="bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 z-50 shadow-md">
+    <div class="max-w-md mx-auto flex justify-around p-2">
+      <button onclick="switchTab('booking')" id="nav-booking" class="flex flex-col items-center gap-1 py-1 px-3 text-[#e30613]">
+        <i class="fa-solid fa-calendar-check text-xl"></i>
+        <span class="text-[10px] font-medium">Запись</span>
+      </button>
+      <button onclick="switchTab('garage')" id="nav-garage" class="flex flex-col items-center gap-1 py-1 px-3 text-slate-400 hover:text-slate-600">
+        <i class="fa-solid fa-warehouse text-xl"></i>
+        <span class="text-[10px] font-medium">Гараж</span>
+      </button>
+      <button onclick="switchTab('chat')" id="nav-chat" class="flex flex-col items-center gap-1 py-1 px-3 text-slate-400 hover:text-slate-600">
+        <i class="fa-solid fa-message text-xl"></i>
+        <span class="text-[10px] font-medium">Чат</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- СКРИПТ УПРАВЛЕНИЯ ПРИЛОЖЕНИЕМ -->
+  <script>
+    // ==========================================
+    // ВАШИ НАСТРОЙКИ БИТРИКС24
+    // ==========================================
+    const BITRIX_WEBHOOK_URL = 'https://b24-oqqrwm.bitrix24.ru/rest/1/n5qs05g3p5y1spp7/'; 
+    const BITRIX_CHAT_ID = 'chat10'; // Чат для записей
+    // ==========================================
+
+    // Хранилище
+    let profile = JSON.parse(localStorage.getItem('alpha_profile')) || { name: '', phone: '' };
+    let cars = JSON.parse(localStorage.getItem('alpha_cars')) || [];
+    let chatPollInterval = null; 
+    let lastRenderedMessageId = 0; 
+    let clientAuthorId = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initApp();
+      setupPwaInstall();
+      setupKeyboardHelper();
+      populateBookingDates(); // Генерируем даты без года
+    });
+
+    async function initApp() {
+      document.getElementById('ownerName').value = profile.name;
+      document.getElementById('ownerPhone').value = profile.phone;
+      renderCars();
+      updateBookingForm();
+      updateChatTabState();
+      
+      await detectClientAuthorId();
+    }
+
+    // Динамический генератор дат без указания года
+    function populateBookingDates() {
+      const select = document.getElementById('bookDateSelect');
+      if (!select) return;
+      select.innerHTML = '';
+      
+      const daysOfWeek = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+      const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+      
+      const today = new Date();
+      
+      for (let i = 0; i < 14; i++) {
+        const currentDate = new Date();
+        currentDate.setDate(today.getDate() + i);
+        
+        const dayNum = currentDate.getDate();
+        const monthText = months[currentDate.getMonth()];
+        const dayOfWeek = daysOfWeek[currentDate.getDay()];
+        
+        let label = `${dayNum} ${monthText} (${dayOfWeek})`;
+        if (i === 0) label = `Сегодня, ${dayNum} ${monthText}`;
+        if (i === 1) label = `Завтра, ${dayNum} ${monthText}`;
+        
+        const option = document.createElement('option');
+        option.value = label; 
+        option.text = label;
+        select.appendChild(option);
+      }
+    }
+
+    // Определение ID пользователя в Битрикс24
+    async function detectClientAuthorId() {
+      try {
+        const response = await fetch(`${BITRIX_WEBHOOK_URL}user.current`);
+        const data = await response.json();
+        if (data.result && data.result.ID) {
+          clientAuthorId = parseInt(data.result.ID);
+          console.log('Битрикс24: Успешно определен ID владельца вебхука:', clientAuthorId);
+        }
+      } catch (error) {
+        console.error('Ошибка определения ID пользователя в Битриксе:', error);
+      }
+    }
+
+    // Переключение вкладок
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+      document.querySelectorAll('nav button').forEach(el => {
+        el.classList.remove('text-[#e30613]');
+        el.classList.add('text-slate-400', 'hover:text-slate-600');
+      });
+      document.getElementById(`nav-${tabId}`).classList.remove('text-slate-400', 'hover:text-slate-600');
+      document.getElementById(`nav-${tabId}`).classList.add('text-[#e30613]');
+
+      if (tabId !== 'chat') {
+        stopChatPolling();
+      } else if (profile.name) {
+        startChatPolling();
+      }
+    }
+
+    // Сохранение Профиля
+    function saveProfile() {
+      const name = document.getElementById('ownerName').value.trim();
+      const phone = document.getElementById('ownerPhone').value.trim();
+
+      if (!name || !phone) {
+        alert('Заполните Имя и Номер телефона!');
+        return;
+      }
+
+      profile = { name, phone };
+      localStorage.setItem('alpha_profile', JSON.stringify(profile));
+      alert('Профиль успешно сохранен!');
+
+      updateBookingForm();
+      updateChatTabState();
+    }
+
+    // Управление формой машин
+    function toggleAddCarForm() {
+      const form = document.getElementById('addCarForm');
+      form.classList.toggle('hidden');
+    }
+
+    // Добавление автомобиля
+    document.getElementById('addCarForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const model = document.getElementById('carModel').value.trim();
+      const plate = document.getElementById('carPlate').value.trim().toUpperCase();
+      const vin = document.getElementById('carVin').value.trim().toUpperCase();
+
+      const newCar = {
+        id: Date.now(),
+        brandModel: model,
+        plate: plate,
+        vin: vin
+      };
+
+      cars.push(newCar);
+      localStorage.setItem('alpha_cars', JSON.stringify(cars));
+      
+      this.reset();
+      toggleAddCarForm();
+      renderCars();
+      updateBookingForm();
+    });
+
+    // Удаление авто
+    function deleteCar(carId) {
+      if (confirm('Вы действительно хотите удалить этот автомобиль из гаража?')) {
+        cars = cars.filter(c => c.id !== carId);
+        localStorage.setItem('alpha_cars', JSON.stringify(cars));
+        renderCars();
+        updateBookingForm();
+      }
+    }
+
+    // Отрисовка автомобилей
+    function renderCars() {
+      const container = document.getElementById('carsList');
+      if (cars.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">В вашем гараже еще нет автомобилей.</p>`;
+        return;
+      }
+
+      container.innerHTML = cars.map(car => `
+        <div class="bg-white border border-slate-200 p-4 rounded-xl flex justify-between items-center shadow-sm">
+          <div>
+            <h4 class="font-bold text-sm text-slate-800">${car.brandModel}</h4>
+            <div class="flex gap-2 mt-1">
+              <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono border border-slate-200">${car.plate}</span>
+              ${car.vin ? `<span class="text-[10px] text-slate-400 font-mono">VIN: ${car.vin}</span>` : ''}
+            </div>
+          </div>
+          <button onclick="deleteCar(${car.id})" class="text-slate-400 hover:text-red-600 transition-colors p-2">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // Обновление состояния вкладки записи
+    function updateBookingForm() {
+      const noProfileWarning = document.getElementById('noProfileWarning');
+      const submitBtn = document.getElementById('submitBookingBtn');
+      const select = document.getElementById('bookCarSelect');
+
+      if (profile.name && profile.phone && cars.length > 0) {
+        noProfileWarning.classList.add('hidden');
+        submitBtn.disabled = false;
+
+        document.getElementById('bookName').value = profile.name;
+        document.getElementById('bookPhone').value = profile.phone;
+
+        select.innerHTML = cars.map(car => `
+          <option value="${car.id}">${car.brandModel} [${car.plate}]</option>
+        `).join('');
+      } else {
+        noProfileWarning.classList.remove('hidden');
+        submitBtn.disabled = true;
+        select.innerHTML = `<option value="">Добавьте авто в гараже</option>`;
+        document.getElementById('bookName').value = '';
+        document.getElementById('bookPhone').value = '';
+      }
+    }
+
+    // Обновление состояния вкладки Чат
+    function updateChatTabState() {
+      const chatDisabledState = document.getElementById('chatDisabledState');
+      const chatEnabledState = document.getElementById('chatEnabledState');
+      const statusText = document.getElementById('chatStatusText');
+
+      if (profile.name && profile.phone) {
+        chatDisabledState.classList.add('hidden');
+        chatEnabledState.classList.remove('hidden');
+        
+        let savedChatId = localStorage.getItem('alpha_chat_id');
+        if (savedChatId) {
+          const cleanId = savedChatId.toString().replace('chat', '');
+          statusText.innerText = `Чат ID: chat${cleanId}`;
+        } else {
+          statusText.innerText = 'Чат не создан';
+        }
+      } else {
+        chatDisabledState.classList.remove('hidden');
+        chatEnabledState.classList.add('hidden');
+        statusText.innerText = 'Профиль пуст';
+      }
+    }
+
+    // ==========================================
+    // СУПЕР-ОТКАЗОУСТОЙЧИВАЯ ЛОГИКА ЧАТА (САМОЗАЛЕЧИВАНИЕ)
+    // ==========================================
+
+    function startChatPolling() {
+      stopChatPolling(); 
+      let savedChatId = localStorage.getItem('alpha_chat_id');
+      
+      if (savedChatId) {
+        const cleanId = savedChatId.toString().replace('chat', '');
+        fetchChatMessages(cleanId);
+        chatPollInterval = setInterval(() => {
+          fetchChatMessages(cleanId);
+        }, 4000);
+      }
+    }
+
+    function stopChatPolling() {
+      if (chatPollInterval) {
+        clearInterval(chatPollInterval);
+        chatPollInterval = null;
+      }
+    }
+
+    // Загрузка сообщений
+    async function fetchChatMessages(chatId) {
+      if (!chatId) return;
+      const cleanId = chatId.toString().replace('chat', '');
+
+      try {
+        const response = await fetch(`${BITRIX_WEBHOOK_URL}im.dialog.messages.get`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            DIALOG_ID: `chat${cleanId}`
+          })
+        });
+
+        // Самозалечивание при сбоях
+        if (response.status === 403 || response.status === 400) {
+          console.warn('Битрикс24: Чат не найден на сервере (403/400). Сброс локального ID.');
+          handleChatDeletion();
+          return;
+        }
+
+        const data = await response.json();
+        
+        if (data.error) {
+          handleChatDeletion();
+          return;
+        }
+
+        if (data.result && data.result.messages) {
+          renderChatBubbles(data.result.messages, data.result.users);
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки сообщений:', error);
+      }
+    }
+
+    // Логика сброса чата при удалении на сервере
+    function handleChatDeletion() {
+      localStorage.removeItem('alpha_chat_id');
+      updateChatTabState();
+      stopChatPolling();
+      document.getElementById('chatMessagesContainer').innerHTML = `
+        <div class="text-center text-[10px] text-slate-400 my-auto py-8">
+          👋 Чат был архивирован или удален в Битрикс24.<br>Напишите новое сообщение ниже, чтобы создать новый чат!
+        </div>
+      `;
+    }
+
+    // Отрисовка пузырей сообщений (Светлая тема)
+    function renderChatBubbles(messagesList, usersList) {
+      const container = document.getElementById('chatMessagesContainer');
+      const sortedMessages = [...messagesList].reverse();
+
+      if (sortedMessages.length === 0) return;
+
+      let html = '';
+      let hasValidMessages = false;
+
+      sortedMessages.forEach(msg => {
+        const textLower = msg.text.toLowerCase();
+
+        // Фильтрация сервисного мусора
+        const isSystemJunk = 
+          msg.system === 'Y' || 
+          textLower.includes('создал чат') || 
+          textLower.includes('создана группа') || 
+          textLower.includes('групповой чат') || 
+          textLower.includes('[user=') ||
+          textLower.includes('присоединился') ||
+          textLower.includes('чат открыт из приложения');
+
+        if (isSystemJunk) {
+          return; 
+        }
+
+        hasValidMessages = true;
+
+        if (!clientAuthorId) {
+          clientAuthorId = msg.author_id;
+        }
+
+        const isMe = msg.author_id === clientAuthorId;
+
+        if (isMe) {
+          // Сообщения клиента (красные справа)
+          html += `
+            <div class="flex flex-col items-end self-end max-w-[80%] my-1">
+              <div class="bg-[#e30613] text-white rounded-2xl rounded-tr-none px-3.5 py-2.5 text-xs shadow-sm">
+                ${msg.text}
+              </div>
+              <span class="text-[8px] text-slate-400 mt-1 mr-1">${new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            </div>
+          `;
+        } else {
+          // Сообщения мастеров (серые слева)
+          const authorObj = usersList.find(u => u.id === msg.author_id) || { name: 'Мастер-приемщик' };
+          html += `
+            <div class="flex flex-col items-start self-start max-w-[80%] my-1">
+              <span class="text-[9px] text-slate-500 ml-1 mb-0.5">${authorObj.name}</span>
+              <div class="bg-slate-100 text-slate-800 rounded-2xl rounded-tl-none px-3.5 py-2.5 text-xs border border-slate-200 shadow-sm">
+                ${msg.text}
+              </div>
+              <span class="text-[8px] text-slate-400 mt-1 ml-1">${new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            </div>
+          `;
+        }
+      });
+
+      if (hasValidMessages) {
+        container.innerHTML = html;
+      }
+
+      const lastMessage = sortedMessages[sortedMessages.length - 1];
+      if (lastMessage && lastMessage.id > lastRenderedMessageId) {
+        lastRenderedMessageId = lastMessage.id;
+        scrollChatToBottom();
+      }
+    }
+
+    function scrollChatToBottom() {
+      const container = document.getElementById('chatMessagesContainer');
+      setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+      }, 200);
+    }
+
+    // Отправка сообщения
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const sendBtn = document.getElementById('chatSendBtn');
+      sendBtn.disabled = true;
+      input.disabled = true;
+
+      let savedChatId = localStorage.getItem('alpha_chat_id');
+      if (savedChatId) {
+        savedChatId = savedChatId.toString().replace('chat', '');
+      }
+
+      // ЛЕНИВАЯ ИНИЦИАЛИЗАЦИЯ
+      if (!savedChatId) {
+        try {
+          const activeCar = cars.length > 0 ? `${cars[0].brandModel} [${cars[0].plate}]` : 'Без авто';
+          const activeCarVin = cars.length > 0 ? (cars[0].vin || 'Не указан') : 'Не указан';
+          
+          const chatResponse = await fetch(`${BITRIX_WEBHOOK_URL}im.chat.add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              TYPE: 'CHAT',
+              TITLE: `[А-Сервис] ${profile.name} [${activeCar}]`,
+              MESSAGE: `🛎️ **ЧАТ ОТКРЫТ ИЗ ПРИЛОЖЕНИЯ**\n👤 Клиент: ${profile.name}\n📞 Телефон: ${profile.phone}\n🚗 Автомобиль: ${activeCar}\n🆔 VIN: ${activeCarVin}`
+            })
+          });
+
+          const chatResult = await chatResponse.json();
+          if (chatResult.result) {
+            savedChatId = chatResult.result.toString().replace('chat', ''); 
+            localStorage.setItem('alpha_chat_id', savedChatId);
+            updateChatTabState();
+            startChatPolling(); 
+          } else {
+            alert('Не удалось инициализировать чат.');
+            sendBtn.disabled = false;
+            input.disabled = false;
+            return;
+          }
+        } catch (error) {
+          alert('Ошибка сети при инициализации чата.');
+          sendBtn.disabled = false;
+          input.disabled = false;
+          return;
+        }
+      }
+
+      try {
+        const msgResponse = await fetch(`${BITRIX_WEBHOOK_URL}im.message.add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            DIALOG_ID: `chat${savedChatId}`,
+            MESSAGE: text
+          })
+        });
+
+        // Самозалечивание
+        if (msgResponse.status === 400 || msgResponse.status === 403) {
+          console.warn('Битрикс24: Авто-восстановление чата при сбое...');
+          localStorage.removeItem('alpha_chat_id');
+          updateChatTabState();
+          stopChatPolling();
+          
+          sendBtn.disabled = false;
+          input.disabled = false;
+          sendChatMessage();
+          return;
+        }
+
+        const msgResult = await msgResponse.json();
+        
+        if (msgResult.error) {
+          localStorage.removeItem('alpha_chat_id');
+          updateChatTabState();
+          stopChatPolling();
+          sendBtn.disabled = false;
+          input.disabled = false;
+          sendChatMessage();
+          return;
+        }
+
+        if (msgResult.result) {
+          input.value = ''; 
+          fetchChatMessages(savedChatId); 
+        }
+      } catch (error) {
+        alert('Ошибка при отправке сообщения.');
+      } finally {
+        sendBtn.disabled = false;
+        input.disabled = false;
+        input.focus();
+      }
+    }
+
+    document.getElementById('chatInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendChatMessage();
+      }
+    });
+
+    // УПРАВЛЕНИЕ КЛАВИАТУРОЙ
+    function setupKeyboardHelper() {
+      const chatInput = document.getElementById('chatInput');
+      const messagesContainer = document.getElementById('chatMessagesContainer');
+      
+      chatInput.addEventListener('focus', () => {
+        setTimeout(() => {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          chatInput.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }, 300);
+      });
+    }
+
+    // Отправка записи на сервис
+    document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submitBookingBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Отправка записи...';
+
+      const selectedCarId = document.getElementById('bookCarSelect').value;
+      const carObj = cars.find(c => c.id == selectedCarId);
+      
+      // Сбор даты и времени БЕЗ года:
+      const dateSelect = document.getElementById('bookDateSelect');
+      const timeSelect = document.getElementById('bookTimeSelect');
+      const selectedDate = dateSelect.value;
+      const selectedTime = timeSelect.value;
+      
+      // Форматируем красивую дату: "Сегодня, 16 июня в 14:30"
+      const formattedDate = `${selectedDate} в ${selectedTime}`;
+
+      const reason = document.getElementById('bookReason').value.trim();
+
+      const messageText = 
+        `🛠️ **ЗАПИСЬ НА ОБСЛУЖИВАНИЕ**\n` +
+        `----------------------------------------\n` +
+        `👤 **Клиент:** ${profile.name}\n` +
+        `📞 **Телефон:** ${profile.phone}\n` +
+        `🚗 **Автомобиль:** ${carObj.brandModel}\n` +
+        `🔢 **Госномер:** ${carObj.plate}\n` +
+        `🆔 **VIN:** ${carObj.vin || 'Не указан'}\n` +
+        `📅 **Дата/время:** ${formattedDate}\n` +
+        `🔧 **Проблема:** ${reason}\n` +
+        `----------------------------------------`;
+
+      try {
+        const response = await fetch(`${BITRIX_WEBHOOK_URL}im.message.add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            DIALOG_ID: BITRIX_CHAT_ID,
+            MESSAGE: messageText
+          })
+        });
+
+        const result = await response.json();
+        if (result.result) {
+          alert('Ваша заявка успешно отправлена! Мы свяжемся с вами.');
+          document.getElementById('bookReason').value = '';
+        } else {
+          alert('Ошибка записи: ' + JSON.stringify(result));
+        }
+      } catch (error) {
+        alert('Ошибка сети при отправке записи.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Отправить заявку';
+      }
+    });
+
+    // Обработка кнопки установки PWA
+    let deferredPrompt;
+    function setupPwaInstall() {
+      const installBtn = document.getElementById('pwaInstallBtn');
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.classList.remove('hidden');
+      });
+
+      installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            installBtn.classList.add('hidden');
+          }
+          deferredPrompt = null;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
